@@ -1,3 +1,5 @@
+import { style } from "d3"
+
 export {}
 
 /*
@@ -96,5 +98,26 @@ const extractFromRow = (row: HTMLTableRowElement):Row =>{
 Graph building
 
 */
+
+
+
+export const insertDiv = (sibling: HTMLElement,
+    options:{id: string
+    ,width:string,height:string,style:string})=>{
+        if(!sibling) return
+        
+        let newDiv = document.createElement("div")
+        newDiv.id = options.id
+        newDiv.setAttribute("style",options.style)
+        newDiv.setAttribute("width",options.width) 
+        newDiv.setAttribute("height",options.height)
+
+        if (sibling.parentNode){
+            sibling.parentNode.insertBefore(newDiv,sibling)
+        }
+        else{
+            sibling.appendChild(newDiv)
+        }
+    }
 
 
