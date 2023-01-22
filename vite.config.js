@@ -3,14 +3,18 @@ import { resolve } from "path";
 
 export default defineConfig({
 
-  root:"src",
+  root:"",
   base:"",
   build:{
     rollupOptions:{
-        input:resolve(__dirname,"src/index.html"),
+        input:resolve(__dirname,"index.html"),
+        
+        
     },
+    
     outDir: resolve(__dirname,"public")
   },
+  
   emptyOutDir: true,
   
 })

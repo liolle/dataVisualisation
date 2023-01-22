@@ -1,6 +1,3 @@
-import { style } from "d3"
-
-export {}
 
 /*
 
@@ -30,7 +27,7 @@ type Row = {
     table : string[]
 }
 
-type Table = {
+export type Table = {
     col_title:string[],
     rows: Row[]
 }
@@ -92,6 +89,8 @@ const extractFromRow = (row: HTMLTableRowElement):Row =>{
         table:table
     }
 }
+
+
 
 /*
 
