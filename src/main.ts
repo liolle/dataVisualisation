@@ -1,6 +1,9 @@
-import { getTabData, insertDiv,transformTable,insertDisplay,setUpSVG,setUpSVG2,addSwitch,tab1_innerhtml } from "./util";
+import { getTabData, insertDiv,transformTable,insertDisplay,
+  insertBars,setUpSVG,setUpSVG2,addSwitch,tab1_innerhtml,
+  sortRow,getMax, updateBars } from "./util";
 
 import * as d3 from "d3";
+import { max } from "d3";
 
 
 const table1 =document.querySelector("#table1") as HTMLTableElement
@@ -29,10 +32,8 @@ const svg_cont2 = document.querySelector("#tab2_canvas") as HTMLDivElement
 
 //table2
 
-
-
-
 let t_table = transformTable(extracted_table1)
+console.log(transformTable(extracted_table2))
 
 let options = {
     margin:{top: 10, right: 5, bottom: 5, left: 35},
@@ -50,105 +51,51 @@ for (let index = 0; index < t_table.length; index++) {
     addSwitch(t_table[index].row_title,tab1_pannel)
 }
 
+let options2 = {
+  margin:{top: 30, right: 5, bottom: 5, left: 100},
+  width : svg_cont2.offsetWidth ,
+  height : 800 ,
+}
 
-// set the dimensions and margins of the graph
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 600 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
 
-// set the ranges
-var x = d3.scaleLinear().range([0, width]);
-var y = d3.scaleBand().range([height, 0]).padding(0.1);
 
-// append the svg object to the body of the page
-// append a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
-var svg = d3.select("#tab2_canvas").append("svg")
-.attr("width", width + margin.left + margin.right)
-.attr("height", height + margin.top + margin.bottom)
-.append("g")
-.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+let t_table2 =transformTable(extracted_table2)
 
-let  dataset1 = [
-    {name: "item1", value: 20},
-    {name: "item2", value: 40},
-    {name: "item3", value: 60},
-    {name: "item4", value: 80},
-    {name: "item5", value: 100}
-  ];
-  
-  let dataset2 = [
-    {name: "box1", value: 300},
-    {name: "box2", value: 85},
-    {name: "box3", value: 100},
-    {name: "box4", value: 150},
-    {name: "box5", value: 220}
-  ];
-  
-  // Scale the range of the data in the domains
-  x.domain([0, d3.max(dataset1, function(d) { return d.value; }) as number])
-  y.domain(dataset1.map(function(d) { return d.name; }));
-  
-  // append the rectangles for the bar chart
-  var bars = svg.selectAll(".bar")
-      .data(dataset1)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("y", (d) => { return y(d.name); })
-      .attr("height", y.bandwidth())
-      .attr("x", 0)
-      .attr("width", function(d) { return x(d.value); });
-  
-  // add the x Axis
-  svg.append("g")
-  .attr("id","x_bar")
-      .call(d3.axisTop(x));
-  
-  // add the y Axis
-  svg.append("g")
-  .attr("id","y_bar")
-      .call(d3.axisLeft(y));
-  
-  // function to update the chart
-  function updateChart(data:{name:string,value:number}[]) {
-    x.domain([0, d3.max(data, function(d) { return d.value; }) as number] );
-    y.domain(data.map(function(d) { return d.name; }));
-  
-    var bars = svg.selectAll(".bar")
-      .data(data);
-  
-    // transition the bars
-    bars.transition()
-      .duration(1000)
-      .attr("y", (d)=> { return y(d.name); })
-      .attr("height", y.bandwidth())
-      .attr("x", 0)
-      .attr("width", function(d) { return x(d.value); });
-  
-    // update the x and y axis
-    svg.select("#x_bar")
-      .transition()
-      .duration(1000)
-      .call(d3.axisTop(x));
-  
-    svg.select("#y_bar")
-      .transition()
-      .duration(1000)
-      .call(d3.axisLeft(y));
-  }
+sortRow(t_table2,0,"order")
+let dataset1 = [...t_table2]
+let max_dataset1 = getMax(dataset1,0)
 
-  let tab2_date1 = document.querySelector("#tab2_date1") as HTMLElement
-  let tab2_date2 = document.querySelector("#tab2_date2") as HTMLElement
+sortRow(t_table2,1,"order")
+let dataset2 = [...t_table2]
+let max_dataset2 = getMax(dataset1,1)
 
-  console.log(extracted_table2)
+let canvas2 = setUpSVG2("tab2_canvas",options2)
+insertBars(canvas2,dataset1,max_dataset1)
+    
 
-  tab2_date1.addEventListener("click",()=>{
-    updateChart(dataset1)
-  })
+let tab2_date1 = document.querySelector("#tab2_date1") as HTMLElement
+let tab2_date2 = document.querySelector("#tab2_date2") as HTMLElement
 
-  tab2_date2.addEventListener("click",()=>{
-    updateChart(dataset2)
-  })
+tab2_date1.style.backgroundColor = "#d1d5db"
+tab2_date1.style.color = "#1d4ed8"
+
+tab2_date1.addEventListener("click",()=>{
+  
+  updateBars(canvas2,dataset1,0,max_dataset1)
+  tab2_date2.style.backgroundColor = "white"
+  tab2_date2.style.color = "black"
+  tab2_date1.style.backgroundColor = "#d1d5db"
+  tab2_date1.style.color = "#1d4ed8"
+})
+
+tab2_date2.addEventListener("click",()=>{
+  updateBars(canvas2,dataset2,1,max_dataset2)
+  //1d4ed8
+  tab2_date1.style.backgroundColor = "white"
+  tab2_date1.style.color = "black"
+  tab2_date2.style.backgroundColor = "#d1d5db"
+  tab2_date2.style.color = "#1d4ed8"
+})
 
 /*
 

@@ -106,6 +106,7 @@ export type Row = {
     row_data:[string,number][]
 }
 
+
 const extractColTitle = (tab:HTMLTableElement,type=0):string[]=>{
 
     let titles:string[] = []
@@ -163,7 +164,6 @@ const extractFromRow = (row: HTMLTableRowElement):Row_raw =>{
         table:table
     }
 }
-
 
 const transformRow = (row:Row_raw,years:string[]):Row=>{
     let res:[string,number][] = []   
@@ -237,8 +237,7 @@ export const insertDisplay = (svgInfo:{
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     x_scale:d3.ScaleTime<number, number, never>,
     y_scale: d3.ScaleLinear<number, number, never>
-},
-    row:Row,
+},row:Row,
     options:{
         margin:{top: number, right: number, bottom: number, left: number},
         width : number ,
@@ -277,6 +276,75 @@ graph
 .attr("cy", (d)=>svgInfo.y_scale(d[1]))
 .attr("r", 3)
 
+}
+
+export const insertBars =(svgInfo:{
+    svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    x_scale:d3.ScaleLinear<number, number, never>,
+    y_scale: d3.ScaleBand<string>
+},row:Row[],max_data:number)=>{
+
+// Scale the range of the data in the domains
+svgInfo.x_scale.domain([0, max_data ])
+svgInfo.y_scale.domain(row.map(function(d) { return d.row_title; }));
+  
+// append the rectangles for the bar chart
+svgInfo.svg.selectAll(".bar")
+.data(row)
+.enter().append("rect")
+.attr("class", "bar")
+.attr("y", (d) => { return svgInfo.y_scale(d.row_title); })
+.attr("height",svgInfo.y_scale.bandwidth())
+.attr("x", 0)
+.attr("width", function(d) { return svgInfo.x_scale(d.row_data[0][1]); })
+.attr("fill","#d1d5db");
+
+// add the x Axis
+svgInfo.svg.append("g")
+.attr("id","x_bar")
+.call(d3.axisTop(svgInfo.x_scale))
+.selectAll("text")
+.style("fill", "#1d4ed8");
+
+// add the y Axis
+svgInfo.svg.append("g")
+.attr("id","y_bar")
+.call(d3.axisLeft(svgInfo.y_scale))
+.selectAll("text")
+.style("fill", "#1d4ed8");
+  
+}
+
+export const updateBars =(canvas:{
+svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+x_scale:d3.ScaleLinear<number, number, never>,
+y_scale: d3.ScaleBand<string>
+},data:Row[],index=0,max_data:number) => {
+
+canvas.x_scale.domain([0, max_data] );
+canvas.y_scale.domain(data.map((d)=>{ return d.row_title; }));
+
+var bars = canvas.svg.selectAll(".bar")
+.data(data);
+
+// transition the bars
+bars.transition()
+    .duration(1000)
+    .attr("y", (d) => { return canvas.y_scale(d.row_title); } )
+    .attr("height", canvas.y_scale.bandwidth())
+    .attr("x", 0)
+    .attr("width", function(d) { return canvas.x_scale(d.row_data[index][1]); });
+
+// update the x and y axis
+canvas.svg.select("#x_bar")
+    .transition()
+    .duration(1000)
+    .call(d3.axisTop(canvas.x_scale));
+
+    canvas.svg.select("#y_bar")
+    .transition()
+    .duration(1000)
+    .call(d3.axisLeft(canvas.y_scale));
 }
 
 export const setUpSVG = (containerId:string,options:{
@@ -338,71 +406,34 @@ export const setUpSVG2 = (containerId:string,options:{
     margin:{top: number, right: number, bottom: number, left: number},
     width : number ,
     height : number ,
-    min_date: string,
-    max_date: string,
 }):{
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     x_scale:d3.ScaleLinear<number, number, never>,
     y_scale: d3.ScaleBand<string>
  }=>{
 
-    // set the dimensions and margins of the graph
-let width = options.width - options.margin.right ,
-height = options.height - options.margin.top - options.margin.bottom;
+// set the dimensions and margins of the graph
+let width = options.width- options.margin.left - options.margin.right,
+height = options.width - options.margin.top - options.margin.bottom;
 
-let date_parser =d3.timeParse("%Y")
+// set the ranges
+let x = d3.scaleLinear().range([0, width]);
+let y = d3.scaleBand().range([height, 0]).padding(0.1);
 
-let svg = d3.select("#"+containerId)
+// append the svg object to the body of the page
+var svg = d3.select("#"+containerId)
 .append("svg")
 .attr("width", options.width + options.margin.left + options.margin.right)
 .attr("height", options.height + options.margin.top + options.margin.bottom)
 .append("g")
-.attr("transform","translate(" + options.margin.left + "," + options.margin.top + ")");
-    
-let date_min = date_parser(options.min_date) as Date
-let date_max = date_parser(options.max_date) as Date
+.attr("transform", "translate(" + options.margin.left + "," + options.margin.top + ")");
 
-// // Add X axis
-// let x = d3.scaleLinear()
-// .domain([50,400])
-// .range([ 0, width ]);
-
-
-// // Add Y axis
-// var y = d3.scaleLinear()
-// .domain([30,0])
-// .range([ height, 0 ]);
-
-
-// Initialize the X axis
-let x = d3.scaleLinear()
-.domain([0, d3.max([4, 8, 15, 16, 23, 42]) as number])
-.range([0, width])
-
-// Initialize the Y axis
-let y =d3.scaleBand()
-.domain(d3.range(6))
-.range([0, 20 * 6])
-
-
-
-svg.append("g")
-.call(d3.axisTop(x));
-
-svg.append("g")
-.call(d3.axisLeft(y));
-
-
-
-
-    return {
-        svg:svg,
-        x_scale:x,
-        y_scale:y
-    }
+return {
+    svg:svg,
+    x_scale:x,
+    y_scale:y
 }
-
-
+}
 
 
 export const addSwitch = ( countryName: string,pannel : HTMLElement)=>{
@@ -445,5 +476,34 @@ export const addSwitch = ( countryName: string,pannel : HTMLElement)=>{
 
 export const transform2 = (table:Table)=>{
     
+}
+
+export const sortRow = (row:Row[],index=0,order:"order"|"reverse")=>{
+
+    if(index >= row.length) return
+    
+    row.sort((a,b)=>{
+        let left =a.row_data[index][1]
+        let right =b.row_data[index][1]
+        
+        if(order == "order")return left-right
+        return right-left
+    })
+    
+
+} 
+
+export const getMax = (row:Row[],index=0):number=>{
+    if(index >= row.length) return NaN
+
+    let current_max = Number.NEGATIVE_INFINITY
+
+    row.forEach(element => {
+        let num = element.row_data[index][1]
+        current_max = current_max < num ? num:current_max
+        
+    });
+    return current_max
+
 }
 
