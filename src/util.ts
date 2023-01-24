@@ -40,7 +40,29 @@ export const COUNTRY_COLORS = {
 };
     
     
+export const tab1_innerhtml = 
 
+`
+<div id="tab1_top" class=" flex flex-col  flex-[1_1_90%] rounded-md ">
+    <div class=" flex flex-row p-1">
+        <div id="tab1_canvas" class=" flex-[1_1_70%] " >
+
+        </div>
+        <div id="tab1_pannel" class=" flex-[1_1_30%] p-1 flex flex-col max-h-[500px] overflow-y-scroll">
+
+
+
+        </div>
+    </div>
+</div>
+<div class="flex-[1_1_10%] p-2 flex items-center ">
+    <button id="tab1_sh_btn" type="button" class="py-2.5 px-5 mr-2 mb-2 text-sm font-bold
+    text-gray-900 focus:outline-none rounded-lg border-2 w-[10%]
+    border-gray-900 hover:bg-gray-300 hover:text-blue-700 ">
+    Hide
+    </button>
+</div>
+`
 
 
 
@@ -192,7 +214,7 @@ Graph building
 
 export const insertDiv = (sibling: HTMLElement,
     options:{id: string
-    ,width:string,height:string,style:string})=>{
+    ,width:string,height:string,style:string,innerHtml:string})=>{
         if(!sibling) return
         
         let newDiv = document.createElement("div")
@@ -200,6 +222,7 @@ export const insertDiv = (sibling: HTMLElement,
         newDiv.setAttribute("style",options.style)
         newDiv.setAttribute("width",options.width) 
         newDiv.setAttribute("height",options.height)
+        newDiv.innerHTML = options.innerHtml
 
         if (sibling.parentNode){
             sibling.parentNode.insertBefore(newDiv,sibling)
@@ -208,31 +231,6 @@ export const insertDiv = (sibling: HTMLElement,
             sibling.appendChild(newDiv)
         }
     }
-
-    /*
-    
-              <div id=" flex tab1">
-                <div id="tab1_top" class=" flex flex-col  lex-[1_1_90%] rounded-md ">
-                    <div class=" flex p-1">
-                      <div id="tab1_canvas" class=" flex-[1_1_80%] " >
-  
-                      </div>
-                      <div id="tab1_pannel" class=" flex-[1_1_20%] p-1">
-    
-                      </div>
-                    </div>
-                </div>
-                <div class="flex-[1_1_10%] p-2 flex items-center ">
-                  <button id="tab1_sh_btn" type="button" class="py-2.5 px-5 mr-2 mb-2 text-sm font-bold
-                  text-gray-900 focus:outline-none rounded-lg border-2 w-[10%]
-                  border-gray-900 hover:bg-gray-300 hover:text-blue-700 ">
-                  Hide
-                  </button>
-                </div>
-
-              </div>
-    
-    */
 
 
 export const insertDisplay = (svgInfo:{
@@ -336,6 +334,76 @@ svg.append("g")
     }
 }
 
+export const setUpSVG2 = (containerId:string,options:{
+    margin:{top: number, right: number, bottom: number, left: number},
+    width : number ,
+    height : number ,
+    min_date: string,
+    max_date: string,
+}):{
+    svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    x_scale:d3.ScaleLinear<number, number, never>,
+    y_scale: d3.ScaleBand<string>
+ }=>{
+
+    // set the dimensions and margins of the graph
+let width = options.width - options.margin.right ,
+height = options.height - options.margin.top - options.margin.bottom;
+
+let date_parser =d3.timeParse("%Y")
+
+let svg = d3.select("#"+containerId)
+.append("svg")
+.attr("width", options.width + options.margin.left + options.margin.right)
+.attr("height", options.height + options.margin.top + options.margin.bottom)
+.append("g")
+.attr("transform","translate(" + options.margin.left + "," + options.margin.top + ")");
+    
+let date_min = date_parser(options.min_date) as Date
+let date_max = date_parser(options.max_date) as Date
+
+// // Add X axis
+// let x = d3.scaleLinear()
+// .domain([50,400])
+// .range([ 0, width ]);
+
+
+// // Add Y axis
+// var y = d3.scaleLinear()
+// .domain([30,0])
+// .range([ height, 0 ]);
+
+
+// Initialize the X axis
+let x = d3.scaleLinear()
+.domain([0, d3.max([4, 8, 15, 16, 23, 42]) as number])
+.range([0, width])
+
+// Initialize the Y axis
+let y =d3.scaleBand()
+.domain(d3.range(6))
+.range([0, 20 * 6])
+
+
+
+svg.append("g")
+.call(d3.axisTop(x));
+
+svg.append("g")
+.call(d3.axisLeft(y));
+
+
+
+
+    return {
+        svg:svg,
+        x_scale:x,
+        y_scale:y
+    }
+}
+
+
+
 
 export const addSwitch = ( countryName: string,pannel : HTMLElement)=>{
 
@@ -373,5 +441,9 @@ export const addSwitch = ( countryName: string,pannel : HTMLElement)=>{
     })
 
 
+}
+
+export const transform2 = (table:Table)=>{
+    
 }
 
