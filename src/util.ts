@@ -64,9 +64,67 @@ export const tab1_innerhtml =
 </div>
 `
 
+export const tab2_innerhtml = 
 
+`
+<div id="tab2_top" class=" flex flex-col w-full  flex-[1_1_90%] rounded-md">
 
+    <div id="tab2_dates" class=" flex-[1_1_10%]  flex flex-row justify-center gap-10 items-center">
+    <button id="tab2_date1" type="button" class="py-2.5 px-5 text-2xl font-bold
+    text-gray-900 focus:outline-none rounded-lg border-2 w-[20%]
+    border-gray-900 hover:bg-gray-300 hover:text-blue-700 ">
+    2007-09
+    </button>
 
+    <button id="tab2_date2" type="button" class="py-2.5 px-5 mr-2 mb-2 text-2xl font-bold
+    text-gray-900 focus:outline-none rounded-lg border-2 w-[20%]
+    border-gray-900 hover:bg-gray-300 hover:text-blue-700 ">
+    2010-12
+    </button>
+    </div>
+
+    <div id="tab2_canvas" class=" flex-[1_1_90%] ">
+
+    </div>
+
+    </div>
+    <div class=" flex-[1_1_10%]  p-2 flex items-center">
+
+    <button id="tab2_sh_btn" type="button" class="py-2.5 px-5 mr-2 mb-2 text-sm font-bold
+    text-gray-900 focus:outline-none rounded-lg border-2 w-[10%]
+    border-gray-900 hover:bg-gray-300 hover:text-blue-700 ">
+    Hide
+    </button>
+
+</div>
+`
+
+export const tab0_innerhtml = 
+
+`
+    <div id="tab0_top" class=" flex flex-col w-full  flex-[1_1_90%] rounded-md">
+
+    <div id="tab0_canvas" class=" flex-[1_1_90%] ">
+
+    </div>
+
+    </div>
+    <div class=" flex-[1_1_10%]  p-2 flex items-center">
+
+    <button id="tab0_sh_btn" type="button" class="py-2.5 px-5 mr-2 mb-2 text-sm font-bold
+    text-gray-900 focus:outline-none rounded-lg border-2 w-[10%]
+    border-gray-900 hover:bg-gray-300 hover:text-blue-700 ">
+    Hide
+    </button>
+
+    <button id="tab0_start_btn" type="button" class="py-2.5 px-5 mr-2 mb-2 text-sm font-bold
+    text-gray-900 focus:outline-none rounded-lg border-2 w-[10%]
+    border-gray-900 hover:bg-gray-300 hover:text-blue-700 ">
+    Start
+    </button>
+
+    </div>
+`
 
 /*
 
@@ -210,6 +268,107 @@ Graph building
 
 */
 
+export class LiveGraph {
+
+    data:[number,number][] =[]
+    timeout
+    inter: number = NaN
+    canvas
+    graph
+    x_axe_start
+    x_axe_end
+    initial_scale
+    running = false
+
+    constructor(timeout:number,canvas:{
+        svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
+        x_scale: d3.ScaleLinear<number, number, never>;
+        y_scale: d3.ScaleLinear<number, number, never>; 
+    }) {
+        this.timeout = timeout
+        this.canvas = canvas
+
+        this.graph = this.canvas.svg
+        .append("g")
+        .append("path")
+        .datum(this.data)
+        
+        this.x_axe_start = 0
+        this.x_axe_end = 1
+        this.initial_scale = canvas.x_scale(-1)
+
+    }
+
+
+    async #updateGraph (canvas:{
+        svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
+        x_scale: d3.ScaleLinear<number, number, never>;
+        y_scale: d3.ScaleLinear<number, number, never>; 
+    },data:[number,number][],x_axe_start:number) {
+
+        if(this.x_axe_end>=data.length){
+
+            try {
+                let res = await fetch("https://canvasjs.com/services/data/datapoints.php")
+                if (!res.ok) return
+    
+                let fetched_data:[number,number][] = await res.json()
+    
+                fetched_data.forEach(elem=>{
+                    this.data.push([this.x_axe_start,elem[1]])
+                    this.x_axe_start++
+                })
+    
+                // let c_p = 2
+                // let c_p1 = 1
+    
+            } catch (err) {
+                console.error(err)
+    
+            }
+        }
+
+
+        this.canvas.x_scale.domain([0, this.x_axe_end] );
+        
+        this.canvas.svg.select("#x_axes0")
+        .transition()
+        .call(d3.axisBottom(this.canvas.x_scale));
+        
+        this.x_axe_end++
+
+        this.graph
+        .attr("fill", "none")
+        .attr("stroke", "black")
+        .attr("stroke-width", 1.5)
+        .transition()
+        .attr("d", d3.line()
+        .x((d)=>canvas.x_scale(d[0]))
+        .y((d)=>canvas.y_scale(d[1]))
+        )
+        .attr("transform", null)
+
+    }
+
+
+    start(state=true) {
+        if (!state && !this.running) return
+
+        this.running = true
+        this.#updateGraph(this.canvas,this.data,this.x_axe_start)
+        setTimeout(() => {
+            this.start(false)
+        }, this.timeout);
+        
+        
+    }
+
+    stop() {
+        this.running = false
+    }
+
+}
+
 
 
 export const insertDiv = (sibling: HTMLElement,
@@ -329,22 +488,70 @@ var bars = canvas.svg.selectAll(".bar")
 
 // transition the bars
 bars.transition()
-    .duration(1000)
-    .attr("y", (d) => { return canvas.y_scale(d.row_title); } )
-    .attr("height", canvas.y_scale.bandwidth())
-    .attr("x", 0)
-    .attr("width", function(d) { return canvas.x_scale(d.row_data[index][1]); });
+.duration(1000)
+.attr("y", (d) => { return canvas.y_scale(d.row_title); } )
+.attr("height", canvas.y_scale.bandwidth())
+.attr("x", 0)
+.attr("width", function(d) { return canvas.x_scale(d.row_data[index][1]); });
 
 // update the x and y axis
 canvas.svg.select("#x_bar")
-    .transition()
-    .duration(1000)
-    .call(d3.axisTop(canvas.x_scale));
+.transition()
+.duration(1000)
+.call(d3.axisTop(canvas.x_scale));
 
-    canvas.svg.select("#y_bar")
-    .transition()
-    .duration(1000)
-    .call(d3.axisLeft(canvas.y_scale));
+canvas.svg.select("#y_bar")
+.transition()
+.duration(1000)
+.call(d3.axisLeft(canvas.y_scale));
+}
+
+
+export const setUpSVG0 = (containerId:string,options:{
+    margin:{top: number, right: number, bottom: number, left: number},
+    width : number ,
+    height : number 
+}):{
+    svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    x_scale:d3.ScaleLinear<number, number, never>,
+    y_scale: d3.ScaleLinear<number, number, never>
+ }=>{
+
+    // set the dimensions and margins of the graph
+let width = options.width - options.margin.right ,
+height = options.height - options.margin.top - options.margin.bottom;
+
+let svg = d3.select("#"+containerId)
+.append("svg")
+.attr("width", options.width + options.margin.left + options.margin.right)
+.attr("height", options.height + options.margin.top + options.margin.bottom)
+.append("g")
+.attr("transform","translate(" + options.margin.left + "," + options.margin.top + ")");
+
+// Add X axis
+let x = d3.scaleLinear()
+.domain([0,10])
+.range([ 0, width ]);
+
+svg.append("g")
+.attr("transform", "translate(0," + height + ")")
+.attr("id","x_axes0")
+.call(d3.axisBottom(x));
+
+// Add Y axis
+var y = d3.scaleLinear()
+.domain([0,30])
+.range([ height, 0 ]);
+
+svg.append("g")
+.attr("id","y_axes0")
+.call(d3.axisLeft(y))
+
+    return {
+        svg:svg,
+        x_scale:x,
+        y_scale:y
+    }
 }
 
 export const setUpSVG = (containerId:string,options:{
