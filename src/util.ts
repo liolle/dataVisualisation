@@ -653,13 +653,12 @@ export const addSwitch = ( countryName: string,pannel : HTMLElement)=>{
     container.innerHTML = 
     `
     <div class="form-check form-switch h-14 w-[100%] pl-2 flex flex-row items-center select-none">
-
-    <input class="form-check-input appearance-none flex-[1_1_30%] rounded-full float-left h-8 
-    align-top bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer 
-    shadow-sm" type="checkbox" role="switch" id="switch_${countryName}" checked>
-
-    <label class="form-check-label text-black flex-[1_1_70%] ml-3 overflow-clip " for="switch_${countryName}">
-    ${countryName}
+    
+    
+    <label class=" flex flex-row gap-2 text-black flex-[1_1_70%] ml-3 overflow-clip " for="switch_${countryName}">
+        <input class="toggle__input " name="" type="checkbox" id="switch_${countryName}" checked>
+        <div class="toggle__fill"></div>
+        ${countryName}
     </label>
 
     </div>
