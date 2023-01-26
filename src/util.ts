@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import { now } from "d3";
 
 export const COUNTRY_COLORS = {
     "Belgium": "#1E90FF",
@@ -304,7 +303,7 @@ export class LiveGraph {
         svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
         x_scale: d3.ScaleLinear<number, number, never>;
         y_scale: d3.ScaleLinear<number, number, never>; 
-    },data:[number,number][],x_axe_start:number) {
+    },data:[number,number][]) {
 
         if(this.x_axe_end>=data.length){
 
@@ -333,6 +332,7 @@ export class LiveGraph {
         
         this.canvas.svg.select("#x_axes0")
         .transition()
+        // @ts-ignore
         .call(d3.axisBottom(this.canvas.x_scale));
         
         this.x_axe_end++
@@ -353,9 +353,8 @@ export class LiveGraph {
 
     start(state=true) {
         if (!state && !this.running) return
-
         this.running = true
-        this.#updateGraph(this.canvas,this.data,this.x_axe_start)
+        this.#updateGraph(this.canvas,this.data)
         setTimeout(() => {
             this.start(false)
         }, this.timeout);
@@ -396,12 +395,7 @@ export const insertDisplay = (svgInfo:{
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     x_scale:d3.ScaleTime<number, number, never>,
     y_scale: d3.ScaleLinear<number, number, never>
-},row:Row,
-    options:{
-        margin:{top: number, right: number, bottom: number, left: number},
-        width : number ,
-        height : number
-    })=>{
+},row:Row)=>{
 
 
 let date_parser =d3.timeParse("%Y")
@@ -417,9 +411,12 @@ graph
 .append("path")
 .datum(row.row_data)
 .attr("fill", "none")
+// @ts-ignore
 .attr("stroke", COUNTRY_COLORS[row.row_title])
 .attr("stroke-width", 1.5)
+// @ts-ignore
 .attr("d", d3.line()
+// @ts-ignore
   .x((d)=>svgInfo.x_scale(date_parser(d[0]) as Date))
   .y((d)=>svgInfo.y_scale(d[1]))
 );
@@ -430,6 +427,7 @@ graph
 .data(row.row_data)
 .enter()
 .append("circle")
+// @ts-ignore
 .style("fill", COUNTRY_COLORS[row.row_title])
 .attr("cx", (d)=>svgInfo.x_scale(date_parser(d[0]) as Date))
 .attr("cy", (d)=>svgInfo.y_scale(d[1]))
@@ -452,6 +450,7 @@ svgInfo.svg.selectAll(".bar")
 .data(row)
 .enter().append("rect")
 .attr("class", "bar")
+// @ts-ignore
 .attr("y", (d) => { return svgInfo.y_scale(d.row_title); })
 .attr("height",svgInfo.y_scale.bandwidth())
 .attr("x", 0)
@@ -489,6 +488,7 @@ var bars = canvas.svg.selectAll(".bar")
 // transition the bars
 bars.transition()
 .duration(1000)
+// @ts-ignore
 .attr("y", (d) => { return canvas.y_scale(d.row_title); } )
 .attr("height", canvas.y_scale.bandwidth())
 .attr("x", 0)
@@ -498,11 +498,13 @@ bars.transition()
 canvas.svg.select("#x_bar")
 .transition()
 .duration(1000)
+// @ts-ignore
 .call(d3.axisTop(canvas.x_scale));
 
 canvas.svg.select("#y_bar")
 .transition()
 .duration(1000)
+// @ts-ignore
 .call(d3.axisLeft(canvas.y_scale));
 }
 
@@ -539,9 +541,10 @@ svg.append("g")
 .call(d3.axisBottom(x));
 
 // Add Y axis
-var y = d3.scaleLinear()
+let y = d3.scaleLinear()
 .domain([0,30])
 .range([ height, 0 ]);
+
 
 svg.append("g")
 .attr("id","y_axes0")
@@ -679,10 +682,6 @@ export const addSwitch = ( countryName: string,pannel : HTMLElement)=>{
     })
 
 
-}
-
-export const transform2 = (table:Table)=>{
-    
 }
 
 export const sortRow = (row:Row[],index=0,order:"order"|"reverse")=>{

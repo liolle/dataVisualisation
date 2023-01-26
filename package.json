@@ -4,9 +4,9 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "cross-env TAILWIND_MODE=watch && tsc & vite",
-        "build": "cross-env TAILWIND_MODE=build && tsc && vite build",
-        "preview": " npm run build && vite preview",
+        "dev": "cross-env TAILWIND_MODE=watch && tsc --noEmit & vite",
+        "build": "cross-env TAILWIND_MODE=build && tsc --noEmit && vite build ",
+        "preview": " npm run build && vite preview ",
         "pages": "npm run build && gh-pages -d public"
     },
     "devDependencies": {

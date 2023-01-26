@@ -2,8 +2,6 @@ import { getTabData, insertDiv,transformTable,insertDisplay,
   insertBars,setUpSVG,setUpSVG2,addSwitch,tab1_innerhtml,
   sortRow,getMax, updateBars,LiveGraph,tab2_innerhtml,setUpSVG0, tab0_innerhtml } from "./util";
 
-import * as d3 from "d3";
-import { max } from "d3";
 
 
 const table0 =document.querySelector("#mw-content-text") as HTMLTableElement
@@ -31,10 +29,6 @@ insertDiv(table0,{id:"tab0",width:`${table2.offsetWidth}px`,
 height:"500px",style:`
 w-full flex flex-row justify-end`,innerHtml:tab0_innerhtml})
 
-
-
-
-
 const tab1_sh_btn = document.querySelector("#tab1_sh_btn") as HTMLButtonElement
 const tab1_pannel = document.querySelector("#tab1_pannel") as HTMLElement
 const tab2_sh_btn = document.querySelector("#tab2_sh_btn") as HTMLButtonElement
@@ -61,7 +55,7 @@ let options = {
 let canvas = setUpSVG("tab1_canvas",options)
 
 for (let index = 0; index < t_table.length; index++) {
-    insertDisplay(canvas,t_table[index],options)
+    insertDisplay(canvas,t_table[index])
     addSwitch(t_table[index].row_title,tab1_pannel)
 }
 
@@ -70,9 +64,6 @@ let options2 = {
   width : svg_cont2.offsetWidth ,
   height : 800 ,
 }
-
-
-
 
 let t_table2 =transformTable(extracted_table2)
 
@@ -90,15 +81,13 @@ insertBars(canvas2,dataset1,max_dataset1)
 
 
 let options0 = {
-    margin:{top: 10, right: 5, bottom: 5, left: 15},
+    margin:{top: 10, right: 5, bottom: 5, left: 25},
     width : svg_cont0.offsetWidth ,
-    height : 500 ,
-
+    height : 600 ,
 }
 
 
 let canvas0 = setUpSVG0("tab0_canvas",options0)
-
 let chart0 = new LiveGraph(1000,canvas0)
 
 
@@ -157,11 +146,11 @@ tab2_sh_btn.addEventListener("click",()=>{
     switch (getComputedStyle(chart, null).display) {
         case "none":
             chart.style.display = "flex"
-            tab1_sh_btn.innerText = "Hide"
+            tab2_sh_btn.innerText = "Hide"
             break;
         case "flex":
             chart.style.display = "none"
-            tab1_sh_btn.innerText = "Show"
+            tab2_sh_btn.innerText = "Show"
             break;
         default:
             break;
